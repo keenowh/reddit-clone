@@ -12,10 +12,9 @@ import connectRedis from "connect-redis";
 import { COOKIE_NAME, __prod__ } from "./constants";
 import cors from "cors";
 
-const main = async () => {
+const main = async () => {  
   // Connect to database
   const orm = await MikroORM.init(mikroOrmConfig);
-
   // run the migration automatically before anything else
   await orm.getMigrator().up();
 
