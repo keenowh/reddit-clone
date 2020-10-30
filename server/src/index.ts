@@ -25,6 +25,7 @@ const main = async () => {
     entities: [Post, User],
   });
 
+
   // Create express app
   const app = express();
 
