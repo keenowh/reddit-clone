@@ -1,23 +1,26 @@
 import { Box, Button } from "@chakra-ui/core";
-import { Formik, Form } from "formik";
-import React from "react";
-import { InputField } from "../components/InputField";
-import { Wrapper } from "../components/Wrapper";
-import { useCreatePostMutation } from "../generated/graphql";
-import { useRouter } from "next/router";
+import { Form, Formik } from "formik";
 import { withUrqlClient } from "next-urql";
+import { useRouter } from "next/router";
+import React from "react";
 import { createUrqlClient } from "../../utils/createUrqlClient";
+import { InputField } from "../components/InputField";
+import { Layout } from "../components/Layout";
+import { useCreatePostMutation } from "../generated/graphql";
 
 const CreatePost: React.FC<{}> = ({}) => {
   const router = useRouter();
+
   const [, createPost] = useCreatePostMutation();
   return (
-    <Wrapper variant="small">
+    <Layout variant="small">
       <Formik
         initialValues={{ title: "", text: "" }}
         onSubmit={async (values, {}) => {
-          await createPost({ input: values });
-          router.push("/");
+          const { error } = await createPost({ input: values });
+          if (!error) {
+            router.push("/");
+          }
         }}
       >
         {({ isSubmitting }) => (
@@ -46,7 +49,7 @@ const CreatePost: React.FC<{}> = ({}) => {
           </Form>
         )}
       </Formik>
-    </Wrapper>
+    </Layout>
   );
 };
 

@@ -1,7 +1,26 @@
-import {dedupExchange, fetchExchange } from "urql";
-import { LogoutMutation, MeQuery, MeDocument, LoginMutation, RegisterMutation } from "../src/generated/graphql";
+import { dedupExchange, Exchange, fetchExchange } from "urql";
+import {
+  LogoutMutation,
+  MeQuery,
+  MeDocument,
+  LoginMutation,
+  RegisterMutation,
+} from "../src/generated/graphql";
 import { betterUpdateQuery } from "./betterUpdateQuery";
-import { cacheExchange} from "@urql/exchange-graphcache";
+import { cacheExchange } from "@urql/exchange-graphcache";
+import { pipe, tap } from "wonka";
+import Router from "next/router";
+
+export const errorExchange: Exchange = ({ forward }) => (ops$) => {
+  return pipe(
+    forward(ops$),
+    tap(({ error }) => {
+      if (error?.message.includes("not authenticated")) {
+        Router.replace("/login");
+      }
+    })
+  );
+};
 
 export const createUrqlClient = (ssrExchange: any) => ({
   url: "http://localhost:4000/graphql",
@@ -9,19 +28,19 @@ export const createUrqlClient = (ssrExchange: any) => ({
     dedupExchange,
     cacheExchange({
       updates: {
-        Mutation: { 
-          logout: (_result, args, cache, info) => {
-            // me query 
+        Mutation: {
+          logout: (_result, _args, cache, _info) => {
+            // me query
             betterUpdateQuery<LogoutMutation, MeQuery>(
               cache,
-              {query: MeDocument},
+              { query: MeDocument },
               _result,
-              (result, query) => ({
-                me: null
+              (_result, _query) => ({
+                me: null,
               })
-            )
+            );
           },
-          login: (_result, args, cache, info) => {
+          login: (_result, _args, cache, _info) => {
             betterUpdateQuery<LoginMutation, MeQuery>(
               cache,
               { query: MeDocument },
@@ -52,15 +71,15 @@ export const createUrqlClient = (ssrExchange: any) => ({
                 }
               }
             );
-          }
+          },
         },
       },
     }),
+    errorExchange,
     ssrExchange,
     fetchExchange,
   ],
   fetchOptions: {
     credentials: "include" as const,
   },
-} 
-)
+});
