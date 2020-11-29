@@ -12,14 +12,12 @@ export const Navbar: React.FC<NavbarProps> = ({}) => {
     pause: isServer(),
   });
   let body = null;
-  console.log(!data?.me);
 
   // Check if info is loading or not
   if (fetching) {
   } else if (!data?.me) {
     body = (
       <>
-        {" "}
         <NextLink href="/login">
           <Link mr={4}>Login</Link>
         </NextLink>
