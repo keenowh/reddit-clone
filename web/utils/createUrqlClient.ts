@@ -38,16 +38,33 @@ const cursorPagination = (): Resolver => {
       return undefined;
     }
     const fieldKey = `${fieldName}(${stringifyVariables(fieldArgs)})`;
-    const isItInTheCache = cache.resolveFieldByKey(entityKey, fieldKey);
-
+    const isItInTheCache = cache.resolve(
+      cache.resolveFieldByKey(entityKey, fieldKey) as string,
+      "posts"
+    );
+    let hasMore = true;
     info.partial = !isItInTheCache;
     const results: string[] = [];
     fieldInfos.forEach((fi) => {
-      const data = cache.resolveFieldByKey(entityKey, fi.fieldKey) as string[];
+      // Get the query by key ex. Query:{limit:10}
+      const key = cache.resolveFieldByKey(entityKey, fi.fieldKey) as string;
+
+      // Then get the actual query of data in the GraphQL as an array of strings
+      const data = cache.resolve(key, "posts") as string[];
+      const _hasMore = cache.resolve(key, "hasMore");
+
+      if (!_hasMore) {
+        hasMore = _hasMore as boolean;
+      }
+
       results.push(...data);
     });
 
-    return results;
+    return {
+      __typename: "PaginatedPosts",
+      hasMore,
+      posts: results,
+    };
 
     // const visited = new Set();
     // let result: NullArray<string> = [];
@@ -108,6 +125,9 @@ export const createUrqlClient = (ssrExchange: any) => ({
   exchanges: [
     dedupExchange,
     cacheExchange({
+      keys: {
+        PaginatedPosts: () => null,
+      },
       resolvers: {
         Query: {
           posts: cursorPagination(),
@@ -115,6 +135,16 @@ export const createUrqlClient = (ssrExchange: any) => ({
       },
       updates: {
         Mutation: {
+          createPost: (_result, _args, cache, _info) => {
+            //When a new post is created, force the client to refetch the updated post list from the backend
+            const allFields = cache.inspectFields("Query");
+            const fieldInfos = allFields.filter(
+              (info) => info.fieldName === "posts"
+            );
+            fieldInfos.forEach((fi) => {
+              cache.invalidate("Query", "posts", fi.arguments || {});
+            });
+          },
           logout: (_result, _args, cache, _info) => {
             // me query
             betterUpdateQuery<LogoutMutation, MeQuery>(
