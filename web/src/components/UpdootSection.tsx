@@ -14,28 +14,36 @@ export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
   return (
     <Flex direction="column" alignItems="center" justifyContent="center" mr={4}>
       <IconButton
-        onClick={() => {
+        onClick={async () => {
+          if (post.voteStatus === 1) {
+            return;
+          }
           setLoadingState("upvote-loading");
-          vote({
+          await vote({
             postId: post.id,
             value: 1,
           });
           setLoadingState("not-loading");
         }}
         isLoading={loadingState === "upvote-loading"}
+        variantColor={post.voteStatus === 1 ? "green" : undefined}
         aria-label="upvote post"
         icon="chevron-up"
       />
       {post.points}
       <IconButton
-        onClick={() => {
+        onClick={async () => {
+          if (post.voteStatus === -1) {
+            return;
+          }
           setLoadingState("upvote-loading");
-          vote({
+          await vote({
             postId: post.id,
             value: -1,
           });
           setLoadingState("not-loading");
         }}
+        variantColor={post.voteStatus === -1 ? "red" : undefined}
         isLoading={loadingState === "downvote-loading"}
         aria-label="downvote post"
         icon="chevron-down"
