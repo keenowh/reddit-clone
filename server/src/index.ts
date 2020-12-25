@@ -55,7 +55,7 @@ const main = async () => {
         httpOnly: true,
         secure: __prod__, // cookie only works in https
         sameSite: "lax",
-        // domain: __
+        domain: __prod__ ? ".dahyunislove.ddns.net" : undefined,
       },
       saveUninitialized: false,
       secret: process.env.SESSION_SECRET,
