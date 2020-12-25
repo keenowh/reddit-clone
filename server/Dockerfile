@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package.json ./
 COPY yarn.lock ./
 
-RUN yarn install
+RUN yarn
 COPY . .
 COPY .env.production .env
 RUN yarn build
