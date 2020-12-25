@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
+require("dotenv-safe/config");
 const express_1 = __importDefault(require("express"));
 const apollo_server_express_1 = require("apollo-server-express");
 const type_graphql_1 = require("type-graphql");
@@ -33,9 +34,7 @@ const createUpvoteLoader_1 = require("./utils/createUpvoteLoader");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const conn = yield typeorm_1.createConnection({
         type: "postgres",
-        database: "lireddit2",
-        username: "postgres",
-        password: "postgres",
+        url: process.env.DATABASE_URL,
         logging: true,
         synchronize: true,
         migrations: [path_1.default.join(__dirname, "./migrations/*")],
@@ -44,9 +43,9 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     yield conn.runMigrations();
     const app = express_1.default();
     const RedisStore = connect_redis_1.default(express_session_1.default);
-    const redis = new ioredis_1.default();
+    const redis = new ioredis_1.default(process.env.REDIS_URL);
     app.use(cors_1.default({
-        origin: "http://localhost:3000",
+        origin: process.env.CORS_ORIGIN,
         credentials: true,
     }));
     app.use(express_session_1.default({
@@ -62,7 +61,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             sameSite: "lax",
         },
         saveUninitialized: false,
-        secret: "alsdjalksjdaljdlaskjdlajd",
+        secret: process.env.SESSION_SECRET,
         resave: false,
     }));
     const apolloServer = new apollo_server_express_1.ApolloServer({
@@ -82,7 +81,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         app,
         cors: false,
     });
-    app.listen(4000, () => {
+    app.listen(parseInt(process.env.PORT), () => {
         console.log("Server started at localhost:4000 ");
     });
 });
