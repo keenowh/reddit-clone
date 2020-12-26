@@ -3,7 +3,7 @@ import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
 import { useState } from "react";
 import { createUrqlClient } from "../../utils/createUrqlClient";
-import { EditDeletePostButtons } from "../components/editDeletePostButtons";
+import { EditDeletePostButtons } from "../components/EditDeletePostButtons";
 import { Layout } from "../components/Layout";
 import { UpdootSection } from "../components/UpdootSection";
 import { usePostsQuery } from "../generated/graphql";
